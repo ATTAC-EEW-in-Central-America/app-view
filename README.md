@@ -6,9 +6,10 @@ The *sctokenmanager* seiscomp module is in charge of adding/updating/removing th
 ## How to run it
 It is necessary to have a json file that contains the path to the users token SQLite DB. An example is below:
 
-> dashboard_users.json
 > {
+> 
 >     "database_path": "/Path/to/SQLiteDB/tokens.db"
+> 
 > }
 
 The json file containing the path to the SQLite DB must be in the same folder where the dashboard_users.py is and its name must be ***dashboard_users.json***.
