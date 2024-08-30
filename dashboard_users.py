@@ -22,13 +22,14 @@ import dash_bootstrap_components as dbc
 from dash.dependencies import Input, Output
 import plotly.express as px
 import json
+from os import path
 
-# Create the dashboard layout using Dash and Bootstrap
-#app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 
 # Read the JSON file and load the database path
 def load_db_path():
-    with open('dashboard_users.json') as config_file:
+    script_dir = path.dirname(path.abspath(__file__))
+    config_path = path.join(script_dir, 'dashboard_users.json')
+    with open(config_path) as config_file:
         config = json.load(config_file)
     return config['database_path']
 

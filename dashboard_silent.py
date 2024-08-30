@@ -25,18 +25,19 @@ import pandas as pd
 import numpy as np
 from scipy import stats
 import json
+from os import path
 
 # Read the JSON file and load the database path
 def load_db_path():
-    with open('dashboard_silent.json') as config_file:
+    script_dir = path.dirname(path.abspath(__file__))
+    config_path = path.join(script_dir, 'dashboard_silent.json')
+    with open(config_path) as config_file:
         config = json.load(config_file)
     return config['database_path']
 
 # Set your Mapbox access token
 mapbox_access_token = 'your_mapbox_token_here'  # Replace with your actual token
 px.set_mapbox_access_token(mapbox_access_token)
-
-#app = dash.Dash(__name__, external_stylesheets=[dbc.themes.FLATLY], suppress_callback_exceptions=True)
 
 # Function to fetch unique senttime, notifid, and osversions from the database
 def fetch_unique_values():
