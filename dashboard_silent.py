@@ -200,7 +200,7 @@ layout = dbc.Container([
                 dbc.CardBody([
                     dcc.DatePickerRange(
                         id='date-picker-range',
-                        start_date=(latest_senttime - pd.DateOffset(months=6)).to_pydatetime(),
+                        start_date=(latest_senttime - pd.DateOffset(months=3)).to_pydatetime(),
                         end_date=latest_senttime.to_pydatetime(),
                         display_format='YYYY-MM-DD',
                         className="mb-3"
