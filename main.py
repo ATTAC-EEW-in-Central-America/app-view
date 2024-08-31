@@ -35,4 +35,15 @@ register_callbacks2(app)
 register_callbacks3(app)
 
 if __name__ == '__main__':
-    app.run_server(debug=False, port = 8055)
+    app.run_server(debug=False, port = 8055,
+                        host='0.0.0.0',
+                        dev_tools_ui=False,
+                        dev_tools_props_check=False,
+                        dev_tools_serve_dev_bundles=False,
+                        dev_tools_hot_reload=False,
+                        dev_tools_hot_reload_interval=False,
+                        dev_tools_hot_reload_watch_interval=False,
+                        dev_tools_hot_reload_max_retry=False,
+                        dev_tools_silence_routes_logging=False,
+                        dev_tools_prune_errors=False
+                  )
