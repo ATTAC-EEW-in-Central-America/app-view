@@ -21,8 +21,7 @@ import pandas as pd
 import math
 import dash
 import dash_bootstrap_components as dbc
-import dash_core_components as dcc
-import dash_html_components as html
+from dash import dcc, html
 from dash.dependencies import Input, Output
 import plotly.express as px
 import plotly.graph_objs as go
@@ -377,7 +376,6 @@ def register_callbacks(app):
     def update_dashboard_1(eventid, updateno, osversion, language):
         if eventid:
             df_intensity, df_eventnotif, df_eventinfo = get_data(eventid)
-            
             if df_eventinfo.empty:
                 return {}, {}, {}, {}
             
@@ -800,29 +798,29 @@ def register_callbacks(app):
                     evento_label, max_intensidad_label, usuarios_notificados_label)
         
         return [""] * 6 + [{"background-color": "#FFFFFF", "text-align": "center"}] + [""] * 3
+    
     @app.callback(
-        Output('dropdown-eventid', 'options'),
-        Input('input-eventid', 'value')
+        [Output('input-eventid', 'value'),
+         Output('dropdown-eventid', 'options')],
+        [Input('stored-eventid', 'data'),  # Using 'stored-eventid' now
+         Input('dropdown-eventid', 'value')]
     )
-    def populate_eventid_dropdown(eventid):
+    def update_eventid_and_dropdown(eventid_from_store, selected_eventid):
         db_path = load_db_path()
         conn = sqlite3.connect(db_path)
-    
         query = "SELECT eventid, origintime FROM eventinfo ORDER BY origintime DESC"
         df_eventinfo = pd.read_sql(query, conn)
         conn.close()
-    
-        options = [{'label': f"{row['eventid']} ({row['origintime']})", 'value': row['eventid']} for index, row in df_eventinfo.iterrows()]
-    
-        return options
-    
-    @app.callback(
-        Output('input-eventid', 'value'),
-        Input('dropdown-eventid', 'value')
-    )
-    def update_eventid_input(selected_eventid):
-        return selected_eventid
-    
+
+        options = [{'label': f"{row['eventid']} ({row['origintime']})", 'value': row['eventid']} for _, row in df_eventinfo.iterrows()]
+
+        if eventid_from_store:
+            return eventid_from_store, options
+        elif selected_eventid:
+            return selected_eventid, options
+
+        return dash.no_update, options
+        
 # Run the application
 if __name__ == '__main__':
     from dash import Dash
