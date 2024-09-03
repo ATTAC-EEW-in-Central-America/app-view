@@ -239,6 +239,7 @@ layout = dbc.Container([
     dbc.Row([
         dbc.Col([
             dcc.Input(id='input-eventid', type='text', placeholder='Enter eventid', debounce=True),
+            dcc.Dropdown(id='dropdown-eventid', placeholder='Select an eventid')
         ], width=8),
         dbc.Col([
             dcc.Dropdown(
@@ -799,6 +800,28 @@ def register_callbacks(app):
                     evento_label, max_intensidad_label, usuarios_notificados_label)
         
         return [""] * 6 + [{"background-color": "#FFFFFF", "text-align": "center"}] + [""] * 3
+    @app.callback(
+        Output('dropdown-eventid', 'options'),
+        Input('input-eventid', 'value')
+    )
+    def populate_eventid_dropdown(eventid):
+        db_path = load_db_path()
+        conn = sqlite3.connect(db_path)
+    
+        query = "SELECT eventid, origintime FROM eventinfo ORDER BY origintime DESC"
+        df_eventinfo = pd.read_sql(query, conn)
+        conn.close()
+    
+        options = [{'label': f"{row['eventid']} ({row['origintime']})", 'value': row['eventid']} for index, row in df_eventinfo.iterrows()]
+    
+        return options
+    
+    @app.callback(
+        Output('input-eventid', 'value'),
+        Input('dropdown-eventid', 'value')
+    )
+    def update_eventid_input(selected_eventid):
+        return selected_eventid
     
 # Run the application
 if __name__ == '__main__':
