@@ -39,7 +39,7 @@ def load_db_path():
 mapbox_access_token = 'your_mapbox_token_here'  # Replace with your actual token
 px.set_mapbox_access_token(mapbox_access_token)
 
-# Function to fetch unique senttime, notifid, and osversions from the database
+# Fetch initial data for dropdowns
 def fetch_unique_values():
     db_path = load_db_path()  # Load the database path from JSON file
     with sqlite3.connect(db_path) as conn:
@@ -48,26 +48,21 @@ def fetch_unique_values():
     senttimes['senttime'] = pd.to_datetime(senttimes['senttime'], unit='ms')
     return senttimes, osversions
 
+# Initial fetch
 senttimes, osversions = fetch_unique_values()
 
-# Find the latest senttime
+# Get the latest senttime
 latest_senttime = senttimes['senttime'].max()
 
-# Add an "All" option to the OS versions
-osversion_options = [{'label': 'All', 'value': 'All'}] + [
-    {'label': os, 'value': os} for os in osversions['osversion']
-]
-
-# Create a dropdown menu with human-readable date-time options and notifid
-senttime_options = [
-    {'label': f"{time.strftime('%Y-%m-%d %H:%M:%S')} - {notifid}", 'value': time.timestamp() * 1000}
-    for time, notifid in zip(senttimes['senttime'], senttimes['notifid'])
-]
+# Options for dropdowns
+osversion_options = [{'label': 'All', 'value': 'All'}] + [{'label': os, 'value': os} for os in osversions['osversion']]
+senttime_options = [{'label': f"{time.strftime('%Y-%m-%d %H:%M:%S')} - {notifid}", 'value': time.timestamp() * 1000}
+                    for time, notifid in zip(senttimes['senttime'], senttimes['notifid'])]
 
 # Translation dictionary
 translations = {
     'en': {
-        'title': "Notification Analysis Dashboard",
+        'title': "Silent Notification Analysis Dashboard",
         'map_title': "Notification Map & Distribution",
         'map_filters': "Map Filters",
         'dist_filters': "Distribution Filters",
@@ -84,10 +79,10 @@ translations = {
         'time': "Time",
         'number_of_users': "Number of Users",
         'log10_delay': "Log10(Delay)",
-        'select_language': "Select Language"
+        'show_all_data': "Show all data",
     },
     'es': {
-        'title': "Tablero de Análisis de Notificaciones",
+        'title': "Tablero de Análisis de Notificaciones Silenciosas",
         'map_title': "Mapa de Notificaciones y Distribución",
         'map_filters': "Filtros de Mapa",
         'dist_filters': "Filtros de Distribución",
@@ -104,16 +99,14 @@ translations = {
         'time': "Tiempo",
         'number_of_users': "Número de Usuarios",
         'log10_delay': "Log10(Retraso)",
-        'select_language': "Seleccionar Idioma"
+        'show_all_data': "Mostrar todo",
     }
 }
 
 # Layout
-#app.layout = dbc.Container([
 layout = dbc.Container([
     html.H1(id="dashboard-title", className="text-center mt-4 mb-4"),
     
-    # Language selection dropdown
     dbc.Row([
         dbc.Col([
             dcc.Dropdown(
@@ -126,9 +119,13 @@ layout = dbc.Container([
                 clearable=False,
                 className="mb-4"
             )
+        ], width=3),
+        dbc.Col([
+            dbc.Button(id="refresh-button", color="primary", className="mb-4", children="Refresh Data")
         ], width=3)
     ], justify="end"),
     
+    # Add the rest of the layout similar to what you had before
     dbc.Row([
         dbc.Col([
             html.H5(id="map-title", className="text-center mb-4"),
@@ -205,7 +202,7 @@ layout = dbc.Container([
                         display_format='YYYY-MM-DD',
                         className="mb-3"
                     ),
-                    dbc.Button(id="show-all-data-button", color="primary", className="mb-3"),
+                    dbc.Button(id="show-all-data-button", color="primary", className="mb-3",title="Show all data"),
                     dcc.Loading(
                         id="loading-delay-time",
                         type="default",
@@ -244,7 +241,7 @@ layout = dbc.Container([
 ], fluid=True)
 
 def register_callbacks(app):
-# Callback to update all text based on selected language
+    # Callback to update all text based on selected language
     @app.callback(
         [Output('dashboard-title', 'children'),
          Output('map-title', 'children'),
@@ -254,11 +251,6 @@ def register_callbacks(app):
          Output('delay-vs-time-title', 'children'),
          Output('user-count-filters-header', 'children'),
          Output('users-vs-time-title', 'children'),
-         Output('osversion-dropdown-map', 'placeholder'),
-         Output('senttime-dropdown-map', 'placeholder'),
-         Output('osversion-dropdown-dist', 'placeholder'),
-         Output('senttime-dropdown-dist', 'placeholder'),
-         Output('osversion-dropdown-users', 'placeholder'),
          Output('show-all-data-button', 'children')],
         [Input('language-dropdown', 'value')]
     )
@@ -273,15 +265,34 @@ def register_callbacks(app):
             trans['delay_vs_time_title'],
             trans['user_count_filters'],
             trans['users_vs_time_title'],
-            trans['osversion_placeholder'],
-            trans['senttime_placeholder'],
-            trans['osversion_placeholder'],
-            trans['senttime_placeholder'],
-            trans['osversion_placeholder'],
-            trans['delay_vs_time_title']
+            trans['show_all_data']
         ]
     
-    # Callback to update the map based on inputs and provide debug info
+    # Updated callback to refresh data and sort senttime options in descending order
+    @app.callback(
+        [Output('osversion-dropdown-map', 'options'),
+         Output('senttime-dropdown-map', 'options'),
+         Output('osversion-dropdown-dist', 'options'),
+         Output('senttime-dropdown-dist', 'options'),
+         Output('osversion-dropdown-users', 'options')],
+        [Input('refresh-button', 'n_clicks')]
+    )
+    def refresh_data(n_clicks):
+        senttimes, osversions = fetch_unique_values()
+        latest_senttime = senttimes['senttime'].max()
+        
+        osversion_options = [{'label': 'All', 'value': 'All'}] + [{'label': os, 'value': os} for os in osversions['osversion']]
+        
+        # Sort the senttimes in descending order
+        senttimes_sorted = senttimes.sort_values(by='senttime', ascending=False)
+        
+        senttime_options = [{'label': f"{time.strftime('%Y-%m-%d %H:%M:%S')} - {notifid}", 'value': time.timestamp() * 1000}
+                            for time, notifid in zip(senttimes_sorted['senttime'], senttimes_sorted['notifid'])]
+        
+        return osversion_options, senttime_options, osversion_options, senttime_options, osversion_options
+
+    
+    # Callback to update map based on inputs
     @app.callback(
         [Output('map-graph', 'figure'),
          Output('debug-output-map', 'children')],
@@ -341,7 +352,7 @@ def register_callbacks(app):
     
         return fig_map, debug_message_map
     
-    # Callback to update the distribution plot based on inputs and provide debug info
+    # Callback to update distribution plot
     @app.callback(
         [Output('dist-graph', 'figure'),
          Output('debug-output-dist', 'children')],
@@ -393,7 +404,7 @@ def register_callbacks(app):
     
         return fig_dist, debug_message_dist
     
-    # Callback to update the delay vs time plot based on selected date range or all data
+    # Callback to update delay vs time plot
     @app.callback(
         [Output('delay-time-graph', 'figure'),
          Output('debug-output-delay', 'children')],
@@ -477,7 +488,7 @@ def register_callbacks(app):
     
         return fig_delay_time, trans['delay_vs_time_title']
     
-    # Callback to update the number of users vs time plot based on osversion
+    # Callback to update number of users vs time plot
     @app.callback(
         [Output('users-time-graph', 'figure'),
          Output('debug-output-users', 'children')],
@@ -527,10 +538,9 @@ def register_callbacks(app):
         )
     
         return fig_users_time, trans['users_vs_time_title']
-    
+
 if __name__ == '__main__':
-    from dash import Dash
-    app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP],suppress_callback_exceptions=True)
+    app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP], suppress_callback_exceptions=True)
     app.layout = layout
     register_callbacks(app)
     app.run_server(debug=True)
