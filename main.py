@@ -45,7 +45,7 @@ def render_content(tab, stored_eventid):
         return layout2
     elif tab == 'tab-3':
         if stored_eventid:
-            return html.Div([layout3, html.Div(f"Event ID: {stored_eventid}")]) #just to assure the requested eventid is passed to the event dashboard.
+            return html.Div([layout3, html.Div(f"Event ID: {stored_eventid}")])
         return layout3
 
 # Register the callbacks for each dashboard
@@ -54,16 +54,14 @@ register_callbacks2(app)
 register_callbacks3(app)
 
 if __name__ == '__main__':
-    app.run_server(debug=False, port = 8055,
-                        host='0.0.0.0',
-                        dev_tools_ui=False,
-                        dev_tools_props_check=False,
-                        dev_tools_serve_dev_bundles=False,
-                        dev_tools_hot_reload=False,
-                        dev_tools_hot_reload_interval=False,
-                        dev_tools_hot_reload_watch_interval=False,
-                        dev_tools_hot_reload_max_retry=False,
-                        dev_tools_silence_routes_logging=False,
-                        dev_tools_prune_errors=False
-                  )
-
+    app.run_server(debug=False, port=8055,
+                   host='0.0.0.0',
+                   dev_tools_ui=False,
+                   dev_tools_props_check=False,
+                   dev_tools_serve_dev_bundles=False,
+                   dev_tools_hot_reload=False,
+                   dev_tools_hot_reload_interval=False,
+                   dev_tools_hot_reload_watch_interval=False,
+                   dev_tools_hot_reload_max_retry=False,
+                   dev_tools_silence_routes_logging=False,
+                   dev_tools_prune_errors=False)
