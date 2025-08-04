@@ -1,6 +1,6 @@
 {
     "database_path_tokens": "/opt/fcm/tokensdb/tokensDB.db",
-    "database_path_events_silent": "/opt/seiscomp/share/app/dashboard.db"
+    "database_path_events_silent": "/opt/seiscomp/share/app/dashboard.db",
     "cache_size_days": 30,
     "cache_folder": "/opt/app-view/cached_data/"
 }
