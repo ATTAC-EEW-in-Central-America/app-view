@@ -3,13 +3,37 @@ from dash import dcc, html
 import dash_bootstrap_components as dbc
 from dash.dependencies import Input, Output
 from urllib.parse import urlparse, parse_qs
+from flask_caching import Cache
 
 # Import the layouts and functions of the dashboards
 from dashboard_users import layout as layout1, register_callbacks as register_callbacks1
 from dashboard_silent import layout as layout2, register_callbacks as register_callbacks2
 from dashboard_events import layout as layout3, register_callbacks as register_callbacks3
 
+# --- Helper Functions ---
+def load_cfg_path():
+    script_dir = path.dirname(path.abspath(__file__))
+    config_path = path.join(script_dir, 'config.json')
+    with open(config_path) as config_file:
+        config = json.load(config_file)
+    return config
+
+
+cfg = load_cfg_path()
+cache_size = cfg["cache_size_days"]
+cache_path = cfg["cache_folder"]
+
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP], suppress_callback_exceptions=True)
+server = app.server 
+
+CACHE_CONFIG = {
+    'CACHE_TYPE': 'filesystem',
+    'CACHE_DIR': cache_path,
+    'CACHE_THRESHOLD': cache_size 
+}
+
+cache = Cache()
+cache.init_app(server, config=CACHE_CONFIG)
 
 app.layout = dbc.Container([
     dcc.Location(id='url', refresh=False),
@@ -51,7 +75,7 @@ def render_content(tab, stored_eventid):
 # Register the callbacks for each dashboard
 register_callbacks1(app)
 register_callbacks2(app)
-register_callbacks3(app)
+register_callbacks3(app, cache) 
 
 if __name__ == '__main__':
     app.run_server(debug=False, port=8055,
