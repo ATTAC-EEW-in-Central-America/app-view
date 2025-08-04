@@ -1,52 +1,92 @@
-# app-view Dashboards
+# Earthquake and Notification Analytics Dashboard 
+This project is a multi-tab Dash application designed to visualize and analyze data related to earthquake events, user silent notifications, and user token statistics. It provides three distinct dashboards for a detailed overview of the system's performance and user engagement. 
 
-This is a set of three dashboards to present the data by plots, charts and maps for the Users' Tokens (Android and iOS) and the legacy data that comes from app users for reported EQ and Silent Notifications. The information is stored in two SQLite databases: one contains the users tokens data and the second one contains EQ and Silent Notif. information.
-# Users Token Information - dashboard_users
-The *sctokenmanager* seiscomp module is in charge of adding/updating/removing the otken info in this database and stores the data within the DB in two main tables: *fcmTokens* and *apnsTokens*. The dashboard named "*dashboard_users.py*" is just a client that reads and presents the data visually. 
-## How to run it
-It is necessary to have a json file that contains the path to the users token SQLite DB. An example is below:
+## Features 
+
+The application is organized into three main tabs: 
+
+### 1. Users Dashboard (`dashboard_users.py`) 
+This dashboard provides analytics on user acquisition and growth for both Android (FCM) and iOS (APNs) platforms. 
+
+* **Total User Counts:** Displays the total number of unique Android and iOS users. 
+* **New Users Over Time:** A line chart showing the number of new users acquired over a selected time period.
+* **New Users per Period:** A bar chart visualizing new user acquisition per day or hour. 
+* **Cumulative User Growth:** A line chart illustrating the cumulative growth of the user base over time. 
+* **Filtering:** Data can be filtered by predefined time ranges (e.g., Last 24 hours, Last 7 days) or a custom date range. 
+* **Multi-language Support:** English and Spanish languages are supported. 
+
+### 2. Silent Notifications Dashboard (`dashboard_silent.py`) 
+This dashboard focuses on analyzing the delivery and performance of silent notifications sent to users. 
+* **Notification Map:** A map visualizing the geographical distribution of users who received a silent notification, colored by the delivery delay. 
+* **Delay Distribution:** A histogram showing the distribution of notification delivery delays. 
+* **Delay vs. Time:** A scatter plot showing the trend of notification delivery delay over time. 
+* **Users vs. Time:** A line chart showing the number of users who received silent notifications over time. 
+* **Filtering:** Data can be filtered by OS version, specific notification send times, and date ranges. 
+* **Multi-language Support:** English and Spanish languages are supported. 
+
+### 3. Events Dashboard (`dashboard_events.py`) 
+This dashboard is dedicated to the in-depth analysis of specific earthquake events. 
+
+* **Event Summary:** Displays key information about a selected earthquake, including magnitude, depth, origin time, and description. 
+* **Intensity Map:** Visualizes user-reported intensities on a map, along with the event's epicenter. 
+* **Intensity vs. Distance:** Plots reported intensities against hypocentral distance and compares it with the Allen (2012) IPE model. 
+* **Notification Delay Distribution:** Shows the distribution of alert notification delays for different update numbers and OS versions. 
+* **Alert Types:** A stacked bar chart showing the types of alerts (Red, Orange, Green, etc.) sent for each update.
+* **S-Wave Arrival Analysis:** A map and a scatter plot analyzing the alert arrival time relative to the S-wave arrival time (S-wave Leadtime). 
+* **Filtering:** Users can select a specific `eventid` to analyze, and further filter by update number and OS version. 
+* **Caching:** Implements server-side caching with Flask-Caching to speed up data loading for frequently accessed events. 
+
+## Project Structure
+
+* **main.py** # Main application entry point 
+* **dashboard_users.py** # Layout and callbacks for the Users tab
+* **dashboard_silent.py** # Layout and callbacks for the Silent Notifications tab
+* **dashboard_events.py** # Layout and callbacks for the Events tab 
+* **config.json.sample** # Sample configuration file
+
+## Setup and Installation 
+
+1. **Clone the repository:** 
+
+```bash 
+git clone https://github.com/ATTAC-EEW-in-Central-America/app-view.git 
+cd app-view
+``` 
+
+2. **Install dependencies:**
+
+```bash 
+pip install dash pandas dash-bootstrap-components plotly flask-caching scipy 
+``` 
+ It is optional the usage of virtual environment. 
+
+3. **Configure the application:** 
+4. 
+* Rename `config.json.sample` to `config.json`. 
+* Update the `config.json` file with the correct paths to your SQLite databases and desired cache folder. 
 
 ```json
 { 
-     "database_path": "/Path/to/SQLiteDB/tokens.db" 
-}
-```
+ "database_path_tokens": "/path/to/your/tokensDB.db", 
+ "database_path_events_silent": "/path/to/your/dashboard.db", 
+ "cache_size_days": 30, 
+ "cache_folder": "/path/to/your/cache_folder/" 
+ } 
+ ``` 
 
-The json file containing the path to the SQLite DB must be in the same folder where the dashboard_users.py is and its name must be ***dashboard_users.json***.
-In order to run it you just need to use python and it will run on port 8050:
+* In `dashboard_silent.py`, replace `'your_mapbox_token_here'` with your actual Mapbox access token if you intend to use Mapbox maps. 
 
-```shell
-python dashboard_users.py
-```
+4. **Run the application:** 
 
-# EQ info and Silent Notification dashboards
-Both dashboards: EQ info (whose python script is *dashboard_events.py*) and Silent Notifications (whose python script is *dashboard_silent.py*) use the same database. The data that contains this database comes from app clients who write the information in the Firestore collections: *eventnotifications* and *silentnotifications*.
-## How to run them
-In order to run either EQ info dashboard or Silent Notification dashboards is just necessary to have the path to the SQLite DB in a json file. Each dashboard must have this file. Below there is an example:
+```bash 
+python main.py 
+``` 
 
-```json
-{
-     "database_path": "/Path/To/SQLiteDB/dashboard.db"
-}
-```
+The application will be available at `http://0.0.0.0:8055` by default. 
 
-Each dashboard can run independently through the next commands:
+## Usage 
 
-```shell
-python dashboard_silent.py
-python dashboard_events.py
-```
-
-By default the port on which the dashboards run is 8050. The json file containing the path to the SQLite DB must be in the same folder where the dashboard_silent.py and dashboard_events.py scripts are and their names must be ***dashboard_silent.json*** and ***dashboard_events.json***
-# Run the three dashboards at the same time
-In order to run the three dashboards, and having just one control by tabs, use the *main.py* script. No need to modify this control script unless you want to change the port. **By default the port that uses this script is 8055**.
-## How to run the three dashboards
-In order to run the three dashboards just run:
-
-```shell
-python main.py
-```
-
-Make sure that the corresponding json files, that contain the SQLite DB paths for the three dashboard, are properly set up for each dashboard (see more details above).
-
-
+* Navigate to `http://<your-server-ip>:8055` in your web browser. 
+* Use the tabs at the top to switch between the **Users**, **Silent Notif.**, and **Events** dashboards. 
+* Use the dropdowns, date pickers, and other controls within each tab to filter and analyze the data. 
+* To view a specific event, you can pass the `eventid` as a URL parameter. For example: `http://<your-server-ip>:8055/?eventid=insi2025ovbm`. This will automatically switch to the "Events" tab and load the data for the specified event.
