@@ -33,7 +33,7 @@ def load_db_path():
     config_path = path.join(script_dir, 'config.json')
     with open(config_path) as config_file:
         config = json.load(config_file)
-    return config['database_path']
+    return config['database_path_events_silent']
 
 # Set your Mapbox access token
 mapbox_access_token = 'your_mapbox_token_here'  # Replace with your actual token
