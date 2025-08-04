@@ -4,6 +4,7 @@ import dash_bootstrap_components as dbc
 from dash.dependencies import Input, Output
 from urllib.parse import urlparse, parse_qs
 from flask_caching import Cache
+from os import path
 
 # Import the layouts and functions of the dashboards
 from dashboard_users import layout as layout1, register_callbacks as register_callbacks1
